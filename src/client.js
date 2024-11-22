@@ -10,6 +10,30 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
+socket.emit("joinRoom");
+
+socket.on("joinedRoom", ({ messages }) => {
+  if (messages.length === 0) {
+    console.log("Нет сообщений в комнате");
+  } else {
+    messages.forEach((message) => {
+      console.log(`${message.username}: ${message.text}`);
+    });
+  }
+
+  rl.question("Введите ваше имя: ", (name) => {
+    if (name.trim() === "") {
+      console.log("Имя не может быть пустым!");
+      return rl.close();
+    }
+
+    username = name;
+    console.log(`Привет, ${username}! Вы можете отправлять сообщения.`);
+
+    startChat();
+  });
+});
+
 const startChat = () => {
   rl.question("Введите ваше сообщение: ", (message) => {
     if (message.trim() === "") {
@@ -22,15 +46,3 @@ const startChat = () => {
     startChat();
   });
 };
-
-rl.question("Введите ваше имя: ", (name) => {
-  if (name.trim() === "") {
-    console.log("Имя не может быть пустым!");
-    return rl.close();
-  }
-
-  username = name;
-  console.log(`Привет, ${username}! Вы можете отправлять сообщения.`);
-
-  startChat();
-});

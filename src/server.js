@@ -13,6 +13,17 @@ const port = process.env.PORT || 4000;
 io.on("connection", (socket) => {
   console.log("пользователь подключился ");
 
+  socket.on("joinRoom", async () => {
+    const messages = await messageModel.find();
+
+    if (!messages) {
+      console.log("сообщений нет");
+      return;
+    }
+
+    socket.emit("joinedRoom", { messages });
+  });
+
   socket.on("sendMessage", async ({ username, text }) => {
     const message = new messageModel({ username, text });
     await message.save();
