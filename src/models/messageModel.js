@@ -4,7 +4,6 @@ const messageSchema = new mongoose.Schema(
   {
     roomKey: {
       type: String,
-      required: true,
     },
     username: {
       type: String,
