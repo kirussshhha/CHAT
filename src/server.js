@@ -1,19 +1,27 @@
-import express from "express";
 import dotenv from "dotenv";
-import morgan from "morgan";
+import { createServer } from "http";
+import { Server } from "socket.io";
+import { v4 as uuidv4 } from "uuid";
 import connectToDatabase from "./config/connectToDatabase.js";
 
 dotenv.config();
-const app = express();
-app.use(express.json());
-app.use(morgan("dev"));
+const httpServer = createServer();
+const io = new Server(httpServer);
 const port = process.env.PORT || 4000;
 
-app.get("/", (req, res) => {
-  res.send("hello");
+io.on("connection", (socket) => {
+  console.log("пользователь подключился ");
+
+  socket.on("message", (message) => {
+    console.log(message);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("пользователь отключился");
+  });
 });
 
-app.listen(port, async () => {
+httpServer.listen(port, async () => {
   await connectToDatabase();
   console.log(`Server is listening on port ${port}`);
 });
