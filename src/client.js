@@ -1,13 +1,23 @@
 import readline from "readline";
 import { io } from "socket.io-client";
 
-let username;
-
-const socket = io("http://localhost:4000");
-
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
+});
+
+const socket = io("http://localhost:4000");
+
+let username;
+
+socket.emit("createRoom", "Посиделки");
+
+socket.on("roomCreated", ({ roomKey }) => {
+  if (!roomKey) {
+    console.log("Ошибка при создании ключа");
+    return;
+  }
+  console.log(`Ваш ключ для комнаты: ${roomKey}`);
 });
 
 socket.emit("joinRoom");

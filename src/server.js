@@ -4,6 +4,7 @@ import { Server } from "socket.io";
 import { v4 as uuidv4 } from "uuid";
 import connectToDatabase from "./config/connectToDatabase.js";
 import messageModel from "./models/messageModel.js";
+import roomModel from "./models/roomModel.js";
 
 dotenv.config();
 const httpServer = createServer();
@@ -12,6 +13,14 @@ const port = process.env.PORT || 4000;
 
 io.on("connection", (socket) => {
   console.log("пользователь подключился ");
+
+  socket.on("createRoom", async (roomName) => {
+    const roomKey = uuidv4().slice(0, 8);
+    const room = new roomModel({ name: roomName, key: roomKey });
+    await room.save();
+    socket.emit("roomCreated", { roomKey });
+    console.log(`Комната создана: ${roomName} (key: ${roomKey})`);
+  });
 
   socket.on("joinRoom", async () => {
     const messages = await messageModel.find();
