@@ -8,19 +8,32 @@ const rl = readline.createInterface({
 
 const socket = io("http://localhost:4000");
 
-let username;
+let username = "";
+let roomKey = "";
 
-socket.emit("createRoom", "Посиделки");
+const joinRoom = () => {
+  rl.question(
+    "Введите ключ для подключения к комнате или нажмите enter для создания: ",
+    (input) => {
+      if (input.trim() === "") {
+        rl.question("Введите название для новой комнаты: ", (roomName) => {
+          socket.emit("createRoom", roomName);
+        });
+      } else {
+        roomKey = input.trim();
+        rl.question("Ваше имя: ", (name) => {
+          username = name;
+          socket.emit("joinRoom", { roomKey, username });
+        });
+      }
+    }
+  );
+};
 
 socket.on("roomCreated", ({ roomKey }) => {
-  if (!roomKey) {
-    console.log("Ошибка при создании ключа");
-    return;
-  }
   console.log(`Ваш ключ для комнаты: ${roomKey}`);
+  joinRoom();
 });
-
-socket.emit("joinRoom");
 
 socket.on("joinedRoom", ({ messages }) => {
   if (messages.length === 0) {
@@ -30,18 +43,7 @@ socket.on("joinedRoom", ({ messages }) => {
       console.log(`${message.username}: ${message.text}`);
     });
   }
-
-  rl.question("Введите ваше имя: ", (name) => {
-    if (name.trim() === "") {
-      console.log("Имя не может быть пустым!");
-      return rl.close();
-    }
-
-    username = name;
-    console.log(`Привет, ${username}! Вы можете отправлять сообщения.`);
-
-    startChat();
-  });
+  startChat();
 });
 
 const startChat = () => {
@@ -51,8 +53,10 @@ const startChat = () => {
       return startChat();
     }
 
-    socket.emit("sendMessage", { username, text: message });
+    socket.emit("sendMessage", { roomKey, username, text: message.trim() });
 
     startChat();
   });
 };
+
+joinRoom();

@@ -2,13 +2,7 @@ import mongoose from "mongoose";
 
 const messageSchema = new mongoose.Schema(
   {
-    roomKey: {
-      type: String,
-    },
-    username: {
-      type: String,
-      required: true,
-    },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     text: {
       type: String,
       required: true,
