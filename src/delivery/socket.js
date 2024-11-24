@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { handleCreateRoom } from "../usecase/createRoom.js";
 import { handleJoinRoom } from "../usecase/joinRoom.js";
 import { handleSendMessage } from "../usecase/sendMessage.js";
+import { sendDiscordWebhook } from "../webhook.js";
 
 export const initializeSocket = (httpServer) => {
   const io = new Server(httpServer);
@@ -13,6 +14,11 @@ export const initializeSocket = (httpServer) => {
     socket.on("createRoom", async (roomName) => {
       try {
         const { roomKey } = await handleCreateRoom(roomName, uuidv4);
+
+        await sendDiscordWebhook(
+          `Создана новая комната: ${roomName} key: ${roomKey}`
+        );
+
         socket.emit("roomCreated", { roomKey });
         console.log(`Комната создана: ${roomName} (key: ${roomKey})`);
       } catch (error) {
